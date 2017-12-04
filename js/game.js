@@ -23,7 +23,6 @@ class Preload extends Phaser.State
 	preload()
 	{
 		console.log("Preload preload");
-		this.game.load.image("play","assets/images/play.jpg");
 	}
 
 	create()
@@ -43,13 +42,24 @@ class Title extends Phaser.State
 	preload()
 	{
 		console.log("Title preload");
+		console.log(game.width);
+		console.log(game.world.width);
+		this.game.load.image('background', 'assets/images/background600.png');
+		game.load.spritesheet('buttonstart', 'assets/images/button-start.png', 401, 143);
+		game.load.spritesheet('buttonachievements', 'assets/images/button-achievements.png', 363, 135);
 	}
 
 	create()
 	{
 		console.log("Title create");
 		this.start=false;
-		this.game.add.button(0,0,"play",()=>{this.start=true;});
+		this.achievements=false;
+		this.bg=this.game.add.tileSprite(0, 0, 800, 600, 'background');
+
+		var buttonStart = this.game.add.button((game.width-401*0.7)/2,(game.width-260)/2,'buttonstart', ()=>{this.start=true;}, this, 1, 0, 2);
+		buttonStart.scale.set(0.7,0.7)
+		var buttonAchievements = this.game.add.button((game.width-363*0.7)/2,(game.width)/2,'buttonachievements', ()=>{this.achievements=true;}, this, 1, 0, 2);
+		buttonAchievements.scale.set(0.7,0.7)
 	}
 
 	update()
@@ -57,14 +67,53 @@ class Title extends Phaser.State
 		console.log("Title update");
 		if(this.start===true)
 			this.game.state.start("Main");
+		if(this.achievements===true)
+			this.game.state.start("Achievements");
+	}
+}
+
+class Achievements extends Phaser.State
+{
+	preload()
+	{
+		console.log("Achievements preload");
+	}
+
+	create()
+	{
+		console.log("Achievements create");
+		this.game.add.button(0,0,"play",()=>{this.back=true;});
+		this.back=false;
+	}
+
+	update()
+	{
+		console.log("Achievements update");
+		if(this.back===true)
+			this.game.state.start("Title");
 	}
 }
 
 class Main extends Phaser.State
 {
+	managePause()
+	{
+		this.game.paused = true;
+		var rect = game.add.graphics(0, 0);
+		rect.beginFill(0x66b266, 0.5);
+		rect.drawRect(0, 0, game.width, game.height);
+		var buttoncontinue = this.game.add.button(400,400,'button-continue', ()=>{pausedText.destroy();rect.destroy();buttoncontinue.destroy();buttonback.destroy();this.game.paused = false;});
+		buttoncontinue.scale.set(0.6,0.6);
+		var buttonback = this.game.add.button(150,400,'button-back',()=>{this.game.state.start("Title");this.game.paused = false;}, this);
+		buttonback.scale.set(0.6,0.6);
+		var pausedText = this.add.text(100, 250, "Game paused.\nTap button to continue\nor back to main menu.", this._fontStyle);
+	}
 	preload()
 	{
 		console.log("Main preload");
+		this.game.load.image('menu', 'assets/images/menu.png');
+		this.game.load.image('button-continue', 'assets/images/button-continue.png');
+		this.game.load.image('button-back', 'assets/images/button-back.png');
 		this.game.load.image('tile', 'assets/images/tile.png');
 		this.game.load.image('win', 'assets/images/win.png');
 		this.game.load.image('button', 'assets/images/button.png');
@@ -74,7 +123,7 @@ class Main extends Phaser.State
 		this.game.load.image('openeddoor1', 'assets/images/openeddoor1.png');
 		this.game.load.image('openeddoor2', 'assets/images/openeddoor2.png');
 		this.game.load.tilemap('map', 'assets/maps/level1.json', null, Phaser.Tilemap.TILED_JSON);
-		this.game.load.image('background', 'assets/images/sky.png');
+		this.game.load.image('background', 'assets/images/bckpix.png');
 		this.game.load.spritesheet('player', 'assets/images/player.png', 64, 96);
 		this.game.load.spritesheet('coin', 'assets/images/coins.png', 32, 32);
 		this.game.load.image('heart', 'assets/images/heart.png');
@@ -132,6 +181,8 @@ class Main extends Phaser.State
 		this.game.add.text(320,16,'Lives: ',{fontSize:'32px',fill:'#fff'});
 		for(let i=0;i<this.maxLives;i++)
 			this.heart=this.lives.create(432+(32*i),22,'heart');
+		var buttonmenu = this.game.add.button(this.game.width-56,10,'menu', ()=>{this.managePause();});
+		buttonmenu.scale.set(0.5,0.5);
 		console.log("Hud set",this.scoreText);
 
 		//setting map elements
@@ -345,11 +396,12 @@ class Game extends Phaser.Game
 {
 	constructor()
 	{
-		super('100%','100%',Phaser.AUTO,'');
+		super(800,600,Phaser.AUTO,'');
 
 		this.state.add('Boot', Boot, false);
 		this.state.add('Preload', Preload, false);
 		this.state.add('Title', Title, false);
+		this.state.add('Achievements', Achievements, false);
 		this.state.add('Main', Main, false);
 		this.state.add('GameOver', GameOver, false);
 		this.state.add('GameWon', GameWon, false);
