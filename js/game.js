@@ -340,6 +340,7 @@ class Main extends Phaser.State
 		{
 			console.log('restart');
 			this.makePlayer();
+			this.game.camera.follow(this.player);
 		}
 	}
 }
