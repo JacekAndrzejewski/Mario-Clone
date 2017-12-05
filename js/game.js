@@ -114,18 +114,12 @@ class Main extends Phaser.State
 		this.game.load.image('menu', 'assets/images/menu.png');
 		this.game.load.image('button-continue', 'assets/images/button-continue.png');
 		this.game.load.image('button-back', 'assets/images/button-back.png');
-		this.game.load.image('tile', 'assets/images/tile.png');
-		this.game.load.image('win', 'assets/images/win.png');
-		this.game.load.image('button', 'assets/images/button.png');
-		this.game.load.image('buttonclicked', 'assets/images/buttonclicked.png');
-		this.game.load.image('closeddoor1', 'assets/images/closeddoor1.png');
-		this.game.load.image('closeddoor2', 'assets/images/closeddoor2.png');
-		this.game.load.image('openeddoor1', 'assets/images/openeddoor1.png');
-		this.game.load.image('openeddoor2', 'assets/images/openeddoor2.png');
+		this.game.load.spritesheet('tileset32', 'assets/maps/tileset32.png', 32, 32);
 		this.game.load.tilemap('map', 'assets/maps/level1.json', null, Phaser.Tilemap.TILED_JSON);
 		this.game.load.image('background', 'assets/images/bckpix.png');
 		this.game.load.spritesheet('player', 'assets/images/player.png', 64, 96);
 		this.game.load.spritesheet('coin', 'assets/images/coins.png', 32, 32);
+		this.game.load.spritesheet('flag', 'assets/images/flag.png', 32, 32);
 		this.game.load.image('heart', 'assets/images/heart.png');
 		this.game.load.image('expl', 'assets/images/expl.png');
 	}
@@ -145,19 +139,12 @@ class Main extends Phaser.State
 
 		//map images loading
 		this.map=this.game.add.tilemap('map');
-		this.map.addTilesetImage('tile');
-		this.map.addTilesetImage('win');
-		this.map.addTilesetImage('button');
-		this.map.addTilesetImage('buttonclicked');
-		this.map.addTilesetImage('closeddoor1');
-		this.map.addTilesetImage('closeddoor2');
-		this.map.addTilesetImage('openeddoor1');
-		this.map.addTilesetImage('openeddoor2');
-		this.map.setCollisionByExclusion([0,2,3,7,8]);
+		this.map.addTilesetImage('tiles', 'tileset32');
+		this.map.setCollisionByExclusion([0,6,7]);
 		console.log("Map loaded");
 
 		//creating layer of map
-		this.layer=this.map.createLayer('layer01');
+		this.layer=this.map.createLayer('ground');
 		this.layer.resizeWorld();
 		console.log("Layers created");
 
@@ -177,23 +164,51 @@ class Main extends Phaser.State
 
 		//setting hud elements
 		this.scoreText=this.game.add.text(16,16,'Score: '+this.score,{fontSize:'32px',fill:'#000'});
+		this.scoreText.fixedToCamera=true;
 		this.lives=this.game.add.group();
-		this.game.add.text(320,16,'Lives: ',{fontSize:'32px',fill:'#fff'});
+		this.livesText=this.game.add.text(320,16,'Lives: ',{fontSize:'32px',fill:'#fff'});
 		for(let i=0;i<this.maxLives;i++)
 			this.heart=this.lives.create(432+(32*i),22,'heart');
-		var buttonmenu = this.game.add.button(this.game.width-56,10,'menu', ()=>{this.managePause();});
-		buttonmenu.scale.set(0.5,0.5);
+		this.lives.setAll('fixedToCamera',true);
+		this.livesText.fixedToCamera=true;
+		this.buttonmenu = this.game.add.button(this.game.width-56,10,'menu', ()=>{this.managePause();});
+		this.buttonmenu.scale.set(0.5,0.5);
+		this.buttonmenu.fixedToCamera=true;
 		console.log("Hud set",this.scoreText);
 
 		//setting map elements
-		this.coins=this.game.add.group();
-		this.coins.create(96,96, 'coin',0);
-		this.coins.create(0,352, 'coin',0);
-		this.coins.create(32,448, 'coin',0);
-		this.enemy=this.game.add.sprite(32, 448, 'expl');
+		//this.enemy=this.game.add.sprite(32, 448, 'expl');
 		console.log("Map elements set");
 
+		//coins physics
+		this.coins=this.game.add.group();
+		this.game.physics.enable(this.coins,Phaser.Physics.ARCADE);
+		this.coins.enableBody=true;
+		this.map.createFromTiles(5,null, 'coin', 'coins', this.coins);
+		this.coins.setAll('body.gravity.y',-(this.gravity));
+		console.log("Coin physics set");
+
+		//set flag
+		this.flag=this.game.add.group();
+		this.game.physics.enable(this.flag,Phaser.Physics.ARCADE);
+		this.flag.enableBody=true;
+		this.map.createFromTiles(13,null, 'flag','elements',this.flag);
+		console.log("Flag set");
+
+		//enemies physics
+		this.enemies=this.game.add.group();
+		this.game.physics.enable(this.enemies,Phaser.Physics.ARCADE);
+		this.enemies.enableBody=true;
+		this.map.createFromTiles(8,null, 'expl', 'enemies', this.enemies);
+		this.enemies.scale.set(0.7,0.7);
+		this.enemies.setAll('body.velocity.x', this.enemySpeed);
+		this.enemies.setAll('body.bounce.x', 1);
+		console.log("Enemies physics set");
+
 		//enabling animations
+		this.flag.callAll('animations.add','animations','flagmove', [0, 1], 3, true);
+		this.flag.callAll('animations.play','animations','flagmove');
+
 		this.coins.callAll('animations.add','animations','spin', [0, 1, 2, 3, 4, 5], 10, true);
 		this.coins.callAll('animations.play','animations','spin');
 		console.log("Animations set");
@@ -207,26 +222,15 @@ class Main extends Phaser.State
 		this.game.physics.arcade.gravity.y=this.gravity;
 		console.log("Physics enabled");
 
-		//enemy physics
-		this.game.physics.enable(this.enemy, Phaser.Physics.ARCADE);
-		this.enemy.body.collideWorldBounds = true;
-		this.enemy.body.velocity.x=100;
-		this.enemy.scale.set(0.7,0.7);
-		console.log("Enemy physics set");
-
 		//player creation
 		this.makePlayer();
 		console.log("Player physics set");
 
-		//coins physics
-		this.game.physics.enable(this.coins,Phaser.Physics.ARCADE);
-		this.coins.enableBody=true;
-		this.coins.setAll('body.gravity.y',-(this.gravity));
-		console.log("Coin physics set");
+		//
+		this.game.camera.follow(this.player);
 
 		//set map elements callbacks
-		this.map.setTileIndexCallback([2], ()=>{this.game.state.start("GameWon");}, this);
-		this.map.setTileIndexCallback([3], ()=>{this.buttonClicked();}, this);
+		this.map.setTileIndexCallback([6], ()=>{this.buttonClicked();}, this);
 		console.log("Map callbacks set");
 	}
 
@@ -234,12 +238,13 @@ class Main extends Phaser.State
 	{
 		//collisions
 		this.game.physics.arcade.collide(this.player,this.layer);
-		this.game.physics.arcade.collide(this.enemy,this.layer);
-		this.game.physics.arcade.collide(this.coins,this.layer);
+		this.game.physics.arcade.collide(this.enemies,this.layer);
+		this.game.physics.arcade.collide(this.flag,this.layer);
 
 		//check collisions
-		this.game.physics.arcade.overlap(this.player,this.enemy,this.restart,null,this);
+		this.game.physics.arcade.overlap(this.player,this.enemies,this.restart,null,this);
 		this.game.physics.arcade.overlap(this.player,this.coins,this.collectCoin,null,this);
+		this.game.physics.arcade.overlap(this.player,this.flag,()=>{this.game.state.start("GameWon");},null,this);
 
 		//player movement
 		this.player.body.velocity.x = 0;
@@ -280,15 +285,7 @@ class Main extends Phaser.State
 			this.jumpTimer = game.time.now + 500;
 		}
 
-		//enemy movement
-		if(this.enemy.body.blocked.right && this.enemy.body.blocked.down)
-		{
-			this.enemy.body.velocity.x=-this.enemySpeed;
-		}
-		if(this.enemy.body.blocked.left && this.enemy.body.blocked.down)
-		{
-			this.enemy.body.velocity.x=this.enemySpeed;
-		}
+
 
 		console.log("Main update");
 		if(this.gameOver===true)
@@ -297,7 +294,7 @@ class Main extends Phaser.State
 
 	buttonClicked()
 	{
-		this.map.replace(3,4);
+		this.map.replace(6,7);
 		this.doorOpen();
 	}
 
@@ -310,10 +307,10 @@ class Main extends Phaser.State
 
 	doorOpen()
 	{
-		this.map.replace(5,7);
-		this.map.replace(6,8);
-		this.map.setCollision(7,false,this.layer);
-		this.map.setCollision(8,false,this.layer);
+		this.map.replace(9,11);
+		this.map.replace(10,12);
+		this.map.setCollision(11,false,this.layer);
+		this.map.setCollision(12,false,this.layer);
 	}
 
 	makePlayer()
