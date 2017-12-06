@@ -28,11 +28,10 @@ class Preload extends Phaser.State
 	create()
 	{
 		console.log("Preload create");
-		game.highScore=0;
-		game.score=0;
-		game.sumScore=0;
-		game.currentLevel=1;
-
+		this.game.highScore=0;
+		this.game.score=0;
+		this.game.sumScore=0;
+		this.game.currentLevel=1;
 	}
 
 	update()
@@ -49,8 +48,8 @@ class Title extends Phaser.State
 		console.log("Title preload");
 		this.game.load.image('background', 'assets/images/background608.png');
 		this.game.load.image('score-board', 'assets/images/window2.png');
-		game.load.spritesheet('buttonstart', 'assets/images/button-start.png', 401, 143);
-		game.load.spritesheet('buttonachievements', 'assets/images/button-achievements.png', 363, 135);
+		this.game.load.spritesheet('buttonstart', 'assets/images/button-start.png', 401, 143);
+		this.game.load.spritesheet('buttonachievements', 'assets/images/button-achievements.png', 363, 135);
 	}
 
 	create()
@@ -67,10 +66,10 @@ class Title extends Phaser.State
 		this.totalScore=this.game.add.text(100,100,'Total: '+this.game.sumScore,{fontSize:'26px',fill:'#000'});
 		this.scoreText=this.game.add.text(100,180,'Highscore: '+this.game.highScore,{fontSize:'26px',fill:'#000'});
 
-		var buttonStart = this.game.add.button((game.width-401*0.7)/2,(game.width-260)/2,'buttonstart', ()=>{this.start=true;}, this, 1, 0, 2);
-		buttonStart.scale.set(0.7,0.7)
-		var buttonAchievements = this.game.add.button((game.width-363*0.7)/2,(game.width)/2,'buttonachievements', ()=>{this.achievements=true;}, this, 1, 0, 2);
-		buttonAchievements.scale.set(0.7,0.7)
+		this.buttonStart = this.game.add.button((game.width-401*0.7)/2,(game.width-260)/2,'buttonstart', ()=>{this.start=true;}, this, 1, 0, 2);
+		this.buttonStart.scale.set(0.7,0.7)
+		this.buttonAchievements = this.game.add.button((game.width-363*0.7)/2,(game.width)/2,'buttonachievements', ()=>{this.achievements=true;}, this, 1, 0, 2);
+		this.buttonAchievements.scale.set(0.7,0.7)
 	}
 
 	update()
@@ -115,10 +114,10 @@ class Achievements extends Phaser.State
 		this.star2=this.game.add.tileSprite(450, 170,50,47, 'star');
 		this.star3=this.game.add.tileSprite(450, 250,50,47, 'star');
 		this.star4=this.game.add.tileSprite(450, 330,50,47, 'star');
-		if(game.sumScore>=20)this.star1.alpha=1;else this.star1.alpha=0.3;
-		if(game.sumScore>=50)this.star1.alpha=1;else this.star2.alpha=0.3;
-		if(game.sumScore>=100)this.star1.alpha=1;else this.star3.alpha=0.3;
-		if(game.sumScore>=150)this.star1.alpha=1;else this.star4.alpha=0.3;
+		if(this.game.sumScore>=20)this.star1.alpha=1;else this.star1.alpha=0.3;
+		if(this.game.sumScore>=50)this.star1.alpha=1;else this.star2.alpha=0.3;
+		if(this.game.sumScore>=100)this.star1.alpha=1;else this.star3.alpha=0.3;
+		if(this.game.sumScore>=150)this.star1.alpha=1;else this.star4.alpha=0.3;
 
 		this.back=false;
 	}
@@ -198,7 +197,7 @@ class Main extends Phaser.State
 		//setting variables
 		this.facing='turn';
 		this.jumpTimer=0;
-		game.score=0;
+		this.game.score=0;
 		this.gameOver=false;
 		this.updates=0;
 		console.log("Variables set");
@@ -250,9 +249,13 @@ class Main extends Phaser.State
 		this.enemies.enableBody=true;
 		this.map.createFromTiles(8,null, 'expl', 'enemies', this.enemies);
 		this.enemies.scale.set(0.7,0.7);
+		this.boss=this.enemies.getChildAt(0);
+		this.boss.scale.set(1.5,1.5);
 		this.enemies.setAll('body.velocity.x', this.enemySpeed);
 		this.enemies.setAll('body.bounce.x', 1);
 		this.enemies.setAll('body.collideWorldBounds',true);
+		this.boss.body.velocity.x=this.enemySpeed*0.8;
+
 		console.log("Enemies physics set");
 
 		//enabling animations
@@ -286,11 +289,13 @@ class Main extends Phaser.State
 
 	update()
 	{
+		console.log("Main update");
 		//collisions
 		this.game.physics.arcade.collide(this.player,this.layer);
 		this.game.physics.arcade.collide(this.enemies,this.layer);
 		this.game.physics.arcade.collide(this.flag,this.layer);
-		this.game.physics.arcade.collide(this.enemies, this.enemies,this.enemyEnemyCollide);
+		this.enemyUpdate();
+		this.game.physics.arcade.collide(this.enemies);
 
 		//check collisions
 		this.game.physics.arcade.overlap(this.player,this.enemies,this.restart,null,this);
@@ -337,6 +342,7 @@ class Main extends Phaser.State
 			this.jumpTimer = game.time.now + 500;
 		}
 
+<<<<<<< HEAD
 		//shooting
 		if(this.game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
 			if(this.facing=='right'||this.facing=='left'){
@@ -361,8 +367,21 @@ class Main extends Phaser.State
 	}
 
 		console.log("Main update");
+=======
+>>>>>>> 47b49ffc4c59a8f4328d239526de8d761f734f15
 		if(this.gameOver===true)
 			this.game.state.start("GameOver");
+	}
+
+	enemyUpdate()
+	{
+		this.enemies.forEach(e =>{
+			if(this.player.body.y>e.body.y)
+				e.body.velocity.x=0;
+			e.body.velocity.x=this.player.body.x<e.body.x?-this.enemySpeed:this.enemySpeed;
+		});
+		this.boss.body.velocity.x=this.player.body.x<this.boss.body.x?-this.enemySpeed*0.5:this.enemySpeed*0.5;
+		this.boss.body.velocity.y=this.player.body.y<this.boss.body.y?-this.enemySpeed*0.5:this.enemySpeed*0.5;
 	}
 
 	buttonClicked()
@@ -371,11 +390,11 @@ class Main extends Phaser.State
 		this.doorOpen();
 	}
 
-	collectCoin(player, coin)
+	collectCoin(player,coin)
 	{
 		coin.kill();
-		game.score+=10;
-		this.scoreText.text='Score: '+game.score;
+		this.game.score+=10;
+		this.scoreText.text='Score: '+this.game.score;
 	}
 
 	collectBullet(player,bullet)
@@ -415,7 +434,11 @@ class Main extends Phaser.State
 
 	restart()
 	{
-		this.live=this.lives.getChildAt(this.lives.countLiving()-1);
+		if(this.lives.countLiving()>0)
+			this.live=this.lives.getChildAt(this.lives.countLiving()-1);
+		else
+			this.live=this.lives.getChildAt(0);
+
 		this.live.kill();
 		this.player.kill();
 
@@ -432,12 +455,15 @@ class Main extends Phaser.State
 		}
 	}
 
-	enemyEnemyCollide(enemy, enemy2){
-  	enemy.body.velocity.y = -40;
-  	enemy2.body.velocity.y = -40;
-  	if (enemy.body.touching.down) {
-    	enemy.body.velocity.x *= -1;
-  	}
+	enemyEnemyCollide(enemy, enemy2)
+	{
+		if(enemy.body.y>enemy2.body.y)
+  			enemy.body.velocity.y = -40;
+  		else if(enemy2.body.y>enemy.body.y)
+  			enemy2.body.velocity.y = -40;
+
+  		if(enemy.body.touching.down)
+    		enemy.body.velocity.x *= -1;
 	}
 }
 
