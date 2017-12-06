@@ -1,19 +1,25 @@
+/*jshint esversion:6*/
+let debug=false;
+
 
 class Boot extends Phaser.State
 {
 	preload()
 	{
-		console.log("Boot preload");
+		if(debug)
+			console.log("Boot preload");
 	}
 
 	create()
 	{
-		console.log("Boot create");
+		if(debug)
+			console.log("Boot create");
 	}
 
 	update()
 	{
-		console.log("Boot update");
+		if(debug)
+			console.log("Boot update");
 		this.game.state.start("Preload");
 	}
 }
@@ -22,12 +28,14 @@ class Preload extends Phaser.State
 {
 	preload()
 	{
-		console.log("Preload preload");
+		if(debug)
+			console.log("Preload preload");
 	}
 
 	create()
 	{
-		console.log("Preload create");
+		if(debug)
+			console.log("Preload create");
 		this.game.highScore=0;
 		this.game.score=0;
 		this.game.sumScore=0;
@@ -36,7 +44,8 @@ class Preload extends Phaser.State
 
 	update()
 	{
-		console.log("Preload update");
+		if(debug)
+			console.log("Preload update");
 		this.game.state.start("Title");
 	}
 }
@@ -45,7 +54,8 @@ class Title extends Phaser.State
 {
 	preload()
 	{
-		console.log("Title preload");
+		if(debug)
+			console.log("Title preload");
 		this.game.load.image('background', 'assets/images/background608.png');
 		this.game.load.image('score-board', 'assets/images/window2.png');
 		this.game.load.spritesheet('buttonstart', 'assets/images/button-start.png', 401, 143);
@@ -54,27 +64,27 @@ class Title extends Phaser.State
 
 	create()
 	{
-		console.log("Title create");
+		if(debug)
+			console.log("Title create");
 		this.start=false;
 		this.achievements=false;
 		this.bg=this.game.add.tileSprite(0, 0, 800, 608, 'background');
 		this.scoreBoard=this.game.add.tileSprite(85, 81,250,74, 'score-board');
-
 		this.scoreTotalBoard=this.game.add.tileSprite(85, 161,250,74, 'score-board');
-
 
 		this.totalScore=this.game.add.text(100,100,'Total: '+this.game.sumScore,{fontSize:'26px',fill:'#000'});
 		this.scoreText=this.game.add.text(100,180,'Highscore: '+this.game.highScore,{fontSize:'26px',fill:'#000'});
 
 		this.buttonStart = this.game.add.button((game.width-401*0.7)/2,(game.width-260)/2,'buttonstart', ()=>{this.start=true;}, this, 1, 0, 2);
-		this.buttonStart.scale.set(0.7,0.7)
+		this.buttonStart.scale.set(0.7,0.7);
 		this.buttonAchievements = this.game.add.button((game.width-363*0.7)/2,(game.width)/2,'buttonachievements', ()=>{this.achievements=true;}, this, 1, 0, 2);
-		this.buttonAchievements.scale.set(0.7,0.7)
+		this.buttonAchievements.scale.set(0.7,0.7);
 	}
 
 	update()
 	{
-		console.log("Title update");
+		if(debug)
+			console.log("Title update");
 		if(this.start===true)
 			this.game.state.start("Main");
 		if(this.achievements===true)
@@ -90,12 +100,14 @@ class Achievements extends Phaser.State
 		this.game.load.image('background', 'assets/images/background608.png');
 		this.game.load.image('button-back', 'assets/images/button-back.png');
 		this.game.load.image('star', 'assets/images/star.png');
-		console.log("Achievements preload");
+		if(debug)
+			console.log("Achievements preload");
 	}
 
 	create()
 	{
-		console.log("Achievements create");
+		if(debug)
+			console.log("Achievements create");
 		this.bg=this.game.add.tileSprite(0, 0, 800, 608, 'background');
 		this.buttonBack=this.game.add.button((game.width+100)/2,(game.height+250)/2,"button-back",()=>{this.back=true;});
 		this.buttonBack.scale.set(0.6,0.6);
@@ -124,7 +136,8 @@ class Achievements extends Phaser.State
 
 	update()
 	{
-		console.log("Achievements update");
+		if(debug)
+			console.log("Achievements update");
 		if(this.back===true)
 			this.game.state.start("Title");
 	}
@@ -135,23 +148,26 @@ class Main extends Phaser.State
 	managePause()
 	{
 		this.game.paused = true;
-		var rect = game.add.graphics(0, 0);
+		let x=game.camera.x;
+		let y=game.camera.y;
+		let rect = game.add.graphics(x,y);
 		rect.beginFill(0x66b266, 0.5);
 		rect.drawRect(0, 0, game.width, game.height);
-		var buttoncontinue = this.game.add.button(400,400,'button-continue', ()=>{pausedText.destroy();rect.destroy();buttoncontinue.destroy();buttonback.destroy();this.game.paused = false;});
+		let buttoncontinue = this.game.add.button(400+x,400+y,'button-continue', ()=>{pausedText.destroy();rect.destroy();buttoncontinue.destroy();buttonback.destroy();this.game.paused = false;});
 		buttoncontinue.scale.set(0.6,0.6);
-		var buttonback = this.game.add.button(150,400,'button-back',()=>{this.game.state.start("Title");this.game.paused = false;}, this);
+		let buttonback = this.game.add.button(150+x,400+y,'button-back',()=>{this.game.state.start("Title");this.game.paused = false;}, this);
 		buttonback.scale.set(0.6,0.6);
-		var pausedText = this.add.text(100, 250, "Game paused.\nTap button to continue\nor back to main menu.", this._fontStyle);
+		let pausedText = this.add.text(100+x, 250+y, "Game paused.\nTap button to continue\nor back to main menu.", this._fontStyle);
 	}
 	preload()
 	{
-		console.log("Main preload");
+		if(debug)
+			console.log("Main preload");
 		this.game.load.image('menu', 'assets/images/menu.png');
 		this.game.load.image('button-continue', 'assets/images/button-continue.png');
 		this.game.load.image('button-back', 'assets/images/button-back.png');
 		this.game.load.spritesheet('tileset32', 'assets/maps/tileset32.png', 32, 32);
-		this.game.load.tilemap('map', 'assets/maps/level1.json', null, Phaser.Tilemap.TILED_JSON);
+		this.game.load.tilemap('map', 'assets/maps/level'+this.game.currentLevel+'.json', null, Phaser.Tilemap.TILED_JSON);
 		this.game.load.image('background', 'assets/images/bckpix.png');
 		this.game.load.spritesheet('player', 'assets/images/player.png', 64, 96);
 		this.game.load.spritesheet('coin', 'assets/images/coins.png', 32, 32);
@@ -164,27 +180,32 @@ class Main extends Phaser.State
 
 	create()
 	{
-		console.log("Main create");
+		if(debug)
+			console.log("Main create");
 		//game configuration
 		this.game.physics.startSystem(Phaser.Physics.ARCADE);
 		this.game.time.desiredFps = 60;
-		console.log("Game configured");
+		if(debug)
+			console.log("Game configured");
 
 		//background settings
 		this.bg=this.game.add.tileSprite(0, 0, 800, 608, 'background');
 		this.bg.fixedToCamera = true;
-		console.log("Background set");
+		if(debug)
+			console.log("Background set");
 
 		//map images loading
 		this.map=this.game.add.tilemap('map');
 		this.map.addTilesetImage('tiles', 'tileset32');
 		this.map.setCollisionByExclusion([0,6,7]);
-		console.log("Map loaded");
+		if(debug)
+			console.log("Map loaded");
 
 		//creating layer of map
 		this.layer=this.map.createLayer('ground');
 		this.layer.resizeWorld();
-		console.log("Layers created");
+		if(debug)
+			console.log("Layers created");
 
 		//setting constants
 		this.gravity=400;
@@ -192,7 +213,8 @@ class Main extends Phaser.State
 		this.playerSpeed=200;
 		this.maxLives=3;
 		this.bulletsCount=0;
-		console.log("Constants set");
+		if(debug)
+			console.log("Constants set");
 
 		//setting variables
 		this.facing='turn';
@@ -200,7 +222,9 @@ class Main extends Phaser.State
 		this.game.score=0;
 		this.gameOver=false;
 		this.updates=0;
-		console.log("Variables set");
+		this.game.bulletAlive=0;
+		if(debug)
+			console.log("Variables set");
 
 		//setting hud elements
 		this.scoreText=this.game.add.text(16,16,'Score: '+game.score,{fontSize:'32px',fill:'#000'});
@@ -211,14 +235,15 @@ class Main extends Phaser.State
 			this.heart=this.lives.create(412+(32*i),22,'heart');
 		this.lives.setAll('fixedToCamera',true);
 		this.livesText.fixedToCamera=true;
-		this.bulletsCountText=this.game.add.text(530,16,'Bullets: '+ this.bulletsCount,{fontSize:'32px',fill:'#000'})
+		this.bulletsCountText=this.game.add.text(530,16,'Bullets: '+ this.bulletsCount,{fontSize:'32px',fill:'#000'});
 		this.bulletsCountText.fixedToCamera=true;
 		this.bulletsImg=this.game.add.tileSprite(675,10,32,32,'bullet');
 		this.bulletsImg.fixedToCamera=true;
 		this.buttonmenu = this.game.add.button(this.game.width-56,10,'menu', ()=>{this.managePause();});
 		this.buttonmenu.scale.set(0.5,0.5);
 		this.buttonmenu.fixedToCamera=true;
-		console.log("Hud set",this.scoreText);
+		if(debug)
+			console.log("Hud set",this.scoreText);
 
 		//bullets Physics
 		this.bullets=this.game.add.group();
@@ -226,7 +251,8 @@ class Main extends Phaser.State
 		this.bullets.enableBody=true;
 		this.map.createFromTiles(14,null, 'bullet', 'elements', this.bullets);
 		this.bullets.setAll('body.gravity.y',-(this.gravity));
-		console.log("Bullets physics set");
+		if(debug)
+			console.log("Bullets physics set");
 
 		//coins physics
 		this.coins=this.game.add.group();
@@ -234,14 +260,16 @@ class Main extends Phaser.State
 		this.coins.enableBody=true;
 		this.map.createFromTiles(5,null, 'coin', 'coins', this.coins);
 		this.coins.setAll('body.gravity.y',-(this.gravity));
-		console.log("Coin physics set");
+		if(debug)
+			console.log("Coin physics set");
 
 		//set flag
 		this.flag=this.game.add.group();
 		this.game.physics.enable(this.flag,Phaser.Physics.ARCADE);
 		this.flag.enableBody=true;
 		this.map.createFromTiles(13,null, 'flag','elements',this.flag);
-		console.log("Flag set");
+		if(debug)
+			console.log("Flag set");
 
 		//enemies physics
 		this.enemies=this.game.add.group();
@@ -256,7 +284,8 @@ class Main extends Phaser.State
 		this.enemies.setAll('body.collideWorldBounds',true);
 		this.boss.body.velocity.x=this.enemySpeed*0.8;
 
-		console.log("Enemies physics set");
+		if(debug)
+			console.log("Enemies physics set");
 
 		//enabling animations
 		this.flag.callAll('animations.add','animations','flagmove', [0, 1], 3, true);
@@ -264,45 +293,52 @@ class Main extends Phaser.State
 
 		this.coins.callAll('animations.add','animations','spin', [0, 1, 2, 3, 4, 5], 10, true);
 		this.coins.callAll('animations.play','animations','spin');
-		console.log("Animations set");
+		if(debug)
+			console.log("Animations set");
 
 		//enabling controls
 		this.cursors=this.game.input.keyboard.createCursorKeys();
 		this.jumpButton=this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-		console.log("Controls set");
+		if(debug)
+			console.log("Controls set");
 
 		//enabling physics for elements
 		this.game.physics.arcade.gravity.y=this.gravity;
-		console.log("Physics enabled");
+		if(debug)
+			console.log("Physics enabled");
 
 		//player creation
 		this.makePlayer();
-		console.log("Player physics set");
+		if(debug)
+			console.log("Player physics set");
 
 		//follow camera
 		this.game.camera.follow(this.player);
 
 		//set map elements callbacks
 		this.map.setTileIndexCallback([6], ()=>{this.buttonClicked();}, this);
-		console.log("Map callbacks set");
+		if(debug)
+			console.log("Map callbacks set");
 	}
 
 	update()
 	{
-		console.log("Main update");
+		if(debug)
+			console.log("Main update");
 		//collisions
 		this.game.physics.arcade.collide(this.player,this.layer);
 		this.game.physics.arcade.collide(this.enemies,this.layer);
 		this.game.physics.arcade.collide(this.flag,this.layer);
 		this.enemyUpdate();
-		this.game.physics.arcade.collide(this.enemies);
+		this.game.physics.arcade.collide(this.enemies,this.enemies,this.enemyEnemyCollide);
+		this.game.physics.arcade.collide(this.bullet,this.layer,this.bulletLayerCollide);
 
 		//check collisions
 		this.game.physics.arcade.overlap(this.player,this.enemies,this.restart,null,this);
 		this.game.physics.arcade.overlap(this.player,this.coins,this.collectCoin,null,this);
 		this.game.physics.arcade.overlap(this.player,this.flag,()=>{this.game.state.start("GameWon");},null,this);
 		this.game.physics.arcade.overlap(this.player,this.bullets,this.collectBullet,null,this);
-		this.game.physics.arcade.overlap(this.bullet, this.enemies, this.shoot);
+		this.game.physics.arcade.overlap(this.bullet,this.enemies,this.shoot,null,this);
 
 		//player movement
 		this.player.body.velocity.x = 0;
@@ -343,29 +379,36 @@ class Main extends Phaser.State
 		}
 
 		//shooting
-		if(this.game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
-			if(this.facing=='right'||this.facing=='left'){
-      if(this.bulletsCount > 0){
-       this.bulletsCount--;
-       this.bulletsCountText.text='Bullets: '+this.bulletsCount;
-       this.bullet = this.game.add.sprite(this.player.body.x+8,this.player.body.y+12,'bulletShot');
-			 this.bullet.anchor.setTo(0.5);
-       this.game.physics.arcade.enable(this.bullet);
-			 this.bullet.body.gravity.y=-(this.gravity);
-			 	if(this.facing=='right') {
-					//bullet.body.x+=16;
-       		this.bullet.body.velocity.x=200;
+		if(this.game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
+		{
+			if(this.facing=='right'||this.facing=='left')
+			{
+				if(this.bulletsCount > 0 && this.game.bulletAlive==0)
+				{
+					console.log("Bull:"+this.bullet);
+					this.game.bulletAlive=1;
+					this.bulletsCount--;
+					this.bulletsCountText.text='Bullets: '+this.bulletsCount;
+					this.bullet = this.game.add.sprite(this.player.body.x+8,this.player.body.y+12,'bulletShot');
+					//this.bullet.anchor.setTo(0.5);
+					this.game.physics.arcade.enable(this.bullet);
+					this.bullet.body.gravity.y=-(this.gravity);
+					if(this.facing=='right')
+					{
+						//bullet.body.x+=16;
+						this.bullet.body.velocity.x=200;
+					}
+					else
+					{
+						this.bullet.scale.setTo(-1);
+						this.bullet.body.velocity.x=-200;
+					}
 				}
-				else {
-					this.bullet.scale.setTo(-1);
+			}
+		}
 
-       		this.bullet.body.velocity.x=-200;
-		 		}
-      }
-    }
-	}
-
-		console.log("Main update");
+		if(debug)
+			console.log("Main update");
 
 		if(this.gameOver===true)
 			this.game.state.start("GameOver");
@@ -373,11 +416,6 @@ class Main extends Phaser.State
 
 	enemyUpdate()
 	{
-		this.enemies.forEach(e =>{
-			if(this.player.body.y>e.body.y)
-				e.body.velocity.x=0;
-			e.body.velocity.x=this.player.body.x<e.body.x?-this.enemySpeed:this.enemySpeed;
-		});
 		this.boss.body.velocity.x=this.player.body.x<this.boss.body.x?-this.enemySpeed*0.5:this.enemySpeed*0.5;
 		this.boss.body.velocity.y=this.player.body.y<this.boss.body.y?-this.enemySpeed*0.5:this.enemySpeed*0.5;
 	}
@@ -402,11 +440,12 @@ class Main extends Phaser.State
 		this.bulletsCountText.text='Bullets: '+this.bulletsCount;
 	}
 
-	shoot (bullet, enemy) {
-  bullet.kill();
-  enemy.animations.stop();
-  enemy.body.enable = false;
-	enemy.kill();
+	shoot (bullet, enemy)
+	{
+		bullet.kill();
+		enemy.animations.stop();
+		enemy.body.enable = false;
+		enemy.kill();
 	}
 
 	doorOpen()
@@ -443,11 +482,13 @@ class Main extends Phaser.State
 		if (this.lives.countLiving() < 1)
 		{
 			this.game.state.start("GameOver");
-			console.log('lose');
+			if(debug)
+				console.log('lose');
 		}
 		else
 		{
-			console.log('restart');
+			if(debug)
+				console.log('restart');
 			this.makePlayer();
 			this.game.camera.follow(this.player);
 		}
@@ -455,13 +496,19 @@ class Main extends Phaser.State
 
 	enemyEnemyCollide(enemy, enemy2)
 	{
-		if(enemy.body.y>enemy2.body.y)
-  			enemy.body.velocity.y = -40;
-  		else if(enemy2.body.y>enemy.body.y)
-  			enemy2.body.velocity.y = -40;
+		if(enemy.body.touching.down)
+		{
+			enemy.body.velocity.x *= -1;
+			enemy2.body.velocity.y*=-1;
+		}
+	}
 
-  		if(enemy.body.touching.down)
-    		enemy.body.velocity.x *= -1;
+	bulletLayerCollide(bullet,layer)
+	{
+		bullet.kill();
+		console.log(bullet.game);
+		console.log("Al:"+bullet.game.bulletAlive);
+		bullet.game.bulletAlive=0;
 	}
 }
 
@@ -472,16 +519,19 @@ class GameOver extends Phaser.State
 		this.game.load.image('background', 'assets/images/background608.png');
 		this.game.load.image('button-back', 'assets/images/button-back.png');
 		this.game.load.image('button-tryagain', 'assets/images/button-tryagain.png');
-		console.log("GameOver preload");
+		if(debug)
+			console.log("GameOver preload");
 
 	}
 
 	create()
 	{
-		console.log("GameOver create");
+		if(debug)
+			console.log("GameOver create");
 		this.bg=this.game.add.tileSprite(0, 0, 800, 608, 'background');
 		this.textLose=this.add.text(260, 100, "YOU LOST!", {fontSize:'50px',fill:'#ff0000'});
 		game.sumScore+=game.score;
+		this.game.currentLevel=1;
 
 		if(game.score>game.highScore)
 		{
@@ -503,7 +553,8 @@ class GameOver extends Phaser.State
 
 	update()
 	{
-		console.log("GameOver update");
+		if(debug)
+			console.log("GameOver update");
 		if(this.restart===true)
 			this.game.state.start("Main");
 		if(this.back===true)
@@ -518,12 +569,14 @@ class GameWon extends Phaser.State
 		this.game.load.image('background', 'assets/images/background608.png');
 		this.game.load.image('button-back', 'assets/images/button-back.png');
 		this.game.load.image('button-continue', 'assets/images/button-continue.png');
-		console.log("GameWon preload");
+		if(debug)
+			console.log("GameWon preload");
 	}
 
 	create()
 	{
-		console.log("GameWon create");
+		if(debug)
+			console.log("GameWon create");
 		this.bg=this.game.add.tileSprite(0, 0, 800, 608, 'background');
 		this.buttonBack=this.game.add.button((game.width-600)/2,(game.height+250)/2,"button-back",()=>{this.back=true;});
 		this.buttonBack.scale.set(0.7,0.7);
@@ -550,19 +603,14 @@ class GameWon extends Phaser.State
 
 	update()
 	{
-		console.log("GameWon update");
+		if(debug)
+			console.log("GameWon update");
 		if(this.back===true)
 			this.game.state.start("Title");
 		if(this.continue===true)
 		{
 			if(game.currentLevel==2)
-			{
-				this.game.state.start("Main2");
-			}
-			else
-			{
-				this.game.state.start("Main3");
-			}
+				this.game.state.start("Main");
 		}
 		if(game.currentLevel>2)
 		{
