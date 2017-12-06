@@ -28,6 +28,11 @@ class Preload extends Phaser.State
 	create()
 	{
 		console.log("Preload create");
+		game.highScore=0;
+		game.score=0;
+		game.sumScore=0;
+		game.currentLevel=1;
+
 	}
 
 	update()
@@ -42,9 +47,8 @@ class Title extends Phaser.State
 	preload()
 	{
 		console.log("Title preload");
-		console.log(game.width);
-		console.log(game.world.width);
 		this.game.load.image('background', 'assets/images/background600.png');
+		this.game.load.image('score-board', 'assets/images/window2.png');
 		game.load.spritesheet('buttonstart', 'assets/images/button-start.png', 401, 143);
 		game.load.spritesheet('buttonachievements', 'assets/images/button-achievements.png', 363, 135);
 	}
@@ -55,6 +59,13 @@ class Title extends Phaser.State
 		this.start=false;
 		this.achievements=false;
 		this.bg=this.game.add.tileSprite(0, 0, 800, 600, 'background');
+		this.scoreBoard=this.game.add.tileSprite(85, 81,250,74, 'score-board');
+
+		this.scoreTotalBoard=this.game.add.tileSprite(85, 161,250,74, 'score-board');
+
+
+		this.totalScore=this.game.add.text(100,100,'Total: '+this.game.sumScore,{fontSize:'26px',fill:'#000'});
+		this.scoreText=this.game.add.text(100,180,'Highscore: '+this.game.highScore,{fontSize:'26px',fill:'#000'});
 
 		var buttonStart = this.game.add.button((game.width-401*0.7)/2,(game.width-260)/2,'buttonstart', ()=>{this.start=true;}, this, 1, 0, 2);
 		buttonStart.scale.set(0.7,0.7)
@@ -76,13 +87,39 @@ class Achievements extends Phaser.State
 {
 	preload()
 	{
+		this.game.load.image('score-board', 'assets/images/window2.png');
+		this.game.load.image('background', 'assets/images/background600.png');
+		this.game.load.image('button-back', 'assets/images/button-back.png');
+		this.game.load.image('star', 'assets/images/star.png');
 		console.log("Achievements preload");
 	}
 
 	create()
 	{
 		console.log("Achievements create");
-		this.game.add.button(0,0,"play",()=>{this.back=true;});
+		this.bg=this.game.add.tileSprite(0, 0, 800, 600, 'background');
+		this.buttonBack=this.game.add.button((game.width+100)/2,(game.height+250)/2,"button-back",()=>{this.back=true;});
+		this.buttonBack.scale.set(0.6,0.6);
+
+
+		this.achievs=this.game.add.group();
+		for(let i=0;i<4;i++)
+			this.scoreBoard=this.achievs.create((game.width-250)/2, 81+(80*i), 'score-board');
+
+		this.game.add.text(300,107,'Collect 20 points',{fontSize:'16px',fill:'#000'});
+		this.game.add.text(300,187,'Collect 50 points',{fontSize:'16px',fill:'#000'});
+		this.game.add.text(300,267,'Collect 100 points',{fontSize:'16px',fill:'#000'});
+		this.game.add.text(300,347,'Collect 150 points',{fontSize:'16px',fill:'#000'});
+
+		this.star1=this.game.add.tileSprite(450, 90,50,47, 'star');
+		this.star2=this.game.add.tileSprite(450, 170,50,47, 'star');
+		this.star3=this.game.add.tileSprite(450, 250,50,47, 'star');
+		this.star4=this.game.add.tileSprite(450, 330,50,47, 'star');
+		if(game.sumScore>=20)this.star1.alpha=1;else this.star1.alpha=0.3;
+		if(game.sumScore>=50)this.star1.alpha=1;else this.star2.alpha=0.3;
+		if(game.sumScore>=100)this.star1.alpha=1;else this.star3.alpha=0.3;
+		if(game.sumScore>=150)this.star1.alpha=1;else this.star4.alpha=0.3;
+
 		this.back=false;
 	}
 
@@ -157,13 +194,13 @@ class Main extends Phaser.State
 		//setting variables
 		this.facing='turn';
 		this.jumpTimer=0;
-		this.score=0;
+		game.score=0;
 		this.gameOver=false;
 		this.updates=0;
 		console.log("Variables set");
 
 		//setting hud elements
-		this.scoreText=this.game.add.text(16,16,'Score: '+this.score,{fontSize:'32px',fill:'#000'});
+		this.scoreText=this.game.add.text(16,16,'Score: '+game.score,{fontSize:'32px',fill:'#000'});
 		this.scoreText.fixedToCamera=true;
 		this.lives=this.game.add.group();
 		this.livesText=this.game.add.text(320,16,'Lives: ',{fontSize:'32px',fill:'#fff'});
@@ -175,10 +212,6 @@ class Main extends Phaser.State
 		this.buttonmenu.scale.set(0.5,0.5);
 		this.buttonmenu.fixedToCamera=true;
 		console.log("Hud set",this.scoreText);
-
-		//setting map elements
-		//this.enemy=this.game.add.sprite(32, 448, 'expl');
-		console.log("Map elements set");
 
 		//coins physics
 		this.coins=this.game.add.group();
@@ -203,6 +236,7 @@ class Main extends Phaser.State
 		this.enemies.scale.set(0.7,0.7);
 		this.enemies.setAll('body.velocity.x', this.enemySpeed);
 		this.enemies.setAll('body.bounce.x', 1);
+		this.enemies.setAll('body.collideWorldBounds',true);
 		console.log("Enemies physics set");
 
 		//enabling animations
@@ -226,7 +260,7 @@ class Main extends Phaser.State
 		this.makePlayer();
 		console.log("Player physics set");
 
-		//
+		//follow camera
 		this.game.camera.follow(this.player);
 
 		//set map elements callbacks
@@ -240,6 +274,7 @@ class Main extends Phaser.State
 		this.game.physics.arcade.collide(this.player,this.layer);
 		this.game.physics.arcade.collide(this.enemies,this.layer);
 		this.game.physics.arcade.collide(this.flag,this.layer);
+		this.game.physics.arcade.collide(this.enemies, this.enemies,this.enemyEnemyCollide);
 
 		//check collisions
 		this.game.physics.arcade.overlap(this.player,this.enemies,this.restart,null,this);
@@ -285,8 +320,6 @@ class Main extends Phaser.State
 			this.jumpTimer = game.time.now + 500;
 		}
 
-
-
 		console.log("Main update");
 		if(this.gameOver===true)
 			this.game.state.start("GameOver");
@@ -301,8 +334,8 @@ class Main extends Phaser.State
 	collectCoin(player, coin)
 	{
 		coin.kill();
-		this.score+=10;
-		this.scoreText.text='Score: '+this.score;
+		game.score+=10;
+		this.scoreText.text='Score: '+game.score;
 	}
 
 	doorOpen()
@@ -334,6 +367,7 @@ class Main extends Phaser.State
 
 		if (this.lives.countLiving() < 1)
 		{
+			this.game.state.start("GameOver");
 			console.log('lose');
 		}
 		else
@@ -343,12 +377,23 @@ class Main extends Phaser.State
 			this.game.camera.follow(this.player);
 		}
 	}
+
+	enemyEnemyCollide(enemy, enemy2){
+  	enemy.body.velocity.y = -40;
+  	enemy2.body.velocity.y = -40;
+  	if (enemy.body.touching.down) {
+    	enemy.body.velocity.x *= -1;
+  	}
+	}
 }
 
 class GameOver extends Phaser.State
 {
 	preload()
 	{
+		this.game.load.image('background', 'assets/images/background600.png');
+		this.game.load.image('button-back', 'assets/images/button-back.png');
+		this.game.load.image('button-tryagain', 'assets/images/button-tryagain.png');
 		console.log("GameOver preload");
 
 	}
@@ -356,7 +401,25 @@ class GameOver extends Phaser.State
 	create()
 	{
 		console.log("GameOver create");
-		this.game.add.button(0,0,"play",()=>{this.restart=true;});
+		this.bg=this.game.add.tileSprite(0, 0, 800, 600, 'background');
+		this.textLose=this.add.text(260, 100, "YOU LOST!", {fontSize:'50px',fill:'#ff0000'});
+		game.sumScore+=game.score;
+
+		if(game.score>game.highScore)
+		{
+			this.scoreText=this.game.add.text(230,230,'NEW HIGH SCORE: '+this.game.score,{fontSize:'32px',fill:'#ff5000'});
+			game.highScore=game.score;
+		}
+		else
+		{
+			this.scoreText=this.game.add.text(260,240,'Score: '+this.game.score,{fontSize:'32px',fill:'#000'});
+		}
+		this.textDiscription = this.add.text(250,300, "Tap button to try again\nor back to main menu.");
+		this.buttonTryagain=this.game.add.button((game.width-600)/2,(game.height+250)/2,"button-tryagain",()=>{this.restart=true;});
+		this.buttonTryagain.scale.set(0.7,0.7);
+		this.buttonContinue=this.game.add.button((game.width+100)/2,(game.height+250)/2,"button-back",()=>{this.back=true;});
+		this.buttonContinue.scale.set(0.7,0.7);
+		this.back=false;
 		this.restart=false;
 	}
 
@@ -364,6 +427,8 @@ class GameOver extends Phaser.State
 	{
 		console.log("GameOver update");
 		if(this.restart===true)
+			this.game.state.start("Main");
+		if(this.back===true)
 			this.game.state.start("Title");
 	}
 }
@@ -372,21 +437,62 @@ class GameWon extends Phaser.State
 {
 	preload()
 	{
+		this.game.load.image('background', 'assets/images/background600.png');
+		this.game.load.image('button-back', 'assets/images/button-back.png');
+		this.game.load.image('button-continue', 'assets/images/button-continue.png');
 		console.log("GameWon preload");
 	}
 
 	create()
 	{
 		console.log("GameWon create");
-		this.game.add.button(0,0,"play",()=>{this.restart=true;});
-		this.restart=false;
+		this.bg=this.game.add.tileSprite(0, 0, 800, 600, 'background');
+		this.buttonBack=this.game.add.button((game.width-600)/2,(game.height+250)/2,"button-back",()=>{this.back=true;});
+		this.buttonBack.scale.set(0.7,0.7);
+		this.buttonContinue=this.game.add.button((game.width+100)/2,(game.height+250)/2,"button-continue",()=>{this.continue=true;});
+		this.buttonContinue.scale.set(0.7,0.7);
+
+		this.textLose=this.add.text(260, 100, "YOU WON!", {fontSize:'50px',fill:'#ff0000'});
+		game.sumScore+=game.score;
+		game.currentLevel++;
+
+		if(game.score>game.highScore)
+		{
+			this.scoreText=this.game.add.text(230,230,'NEW HIGH SCORE: '+this.game.score,{fontSize:'32px',fill:'#ff5000'});
+			game.highScore=game.score;
+		}
+		else
+		{
+			this.scoreText=this.game.add.text(260,240,'Score: '+this.game.score,{fontSize:'32px',fill:'#000'});
+		}
+
+		this.back=false;
+		this.continue=false;
 	}
 
 	update()
 	{
 		console.log("GameWon update");
-		if(this.restart===true)
+		if(this.back===true)
 			this.game.state.start("Title");
+		if(this.continue===true)
+		{
+			if(game.currentLevel==2)
+			{
+				this.game.state.start("Main2");
+			}
+			else
+			{
+				this.game.state.start("Main3");
+			}
+		}
+		if(game.currentLevel>2)
+		{
+			this.buttonContinue.visible=false;
+			this.add.text(250,300, "CONGRATULATIONS!\nYOU FINISHED THE GAME.");
+			game.currentLevel=1;
+		}
+
 	}
 }
 
