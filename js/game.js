@@ -47,7 +47,7 @@ class Title extends Phaser.State
 	preload()
 	{
 		console.log("Title preload");
-		this.game.load.image('background', 'assets/images/background600.png');
+		this.game.load.image('background', 'assets/images/background608.png');
 		this.game.load.image('score-board', 'assets/images/window2.png');
 		game.load.spritesheet('buttonstart', 'assets/images/button-start.png', 401, 143);
 		game.load.spritesheet('buttonachievements', 'assets/images/button-achievements.png', 363, 135);
@@ -58,7 +58,7 @@ class Title extends Phaser.State
 		console.log("Title create");
 		this.start=false;
 		this.achievements=false;
-		this.bg=this.game.add.tileSprite(0, 0, 800, 600, 'background');
+		this.bg=this.game.add.tileSprite(0, 0, 800, 608, 'background');
 		this.scoreBoard=this.game.add.tileSprite(85, 81,250,74, 'score-board');
 
 		this.scoreTotalBoard=this.game.add.tileSprite(85, 161,250,74, 'score-board');
@@ -88,7 +88,7 @@ class Achievements extends Phaser.State
 	preload()
 	{
 		this.game.load.image('score-board', 'assets/images/window2.png');
-		this.game.load.image('background', 'assets/images/background600.png');
+		this.game.load.image('background', 'assets/images/background608.png');
 		this.game.load.image('button-back', 'assets/images/button-back.png');
 		this.game.load.image('star', 'assets/images/star.png');
 		console.log("Achievements preload");
@@ -97,7 +97,7 @@ class Achievements extends Phaser.State
 	create()
 	{
 		console.log("Achievements create");
-		this.bg=this.game.add.tileSprite(0, 0, 800, 600, 'background');
+		this.bg=this.game.add.tileSprite(0, 0, 800, 608, 'background');
 		this.buttonBack=this.game.add.button((game.width+100)/2,(game.height+250)/2,"button-back",()=>{this.back=true;});
 		this.buttonBack.scale.set(0.6,0.6);
 
@@ -170,7 +170,7 @@ class Main extends Phaser.State
 		console.log("Game configured");
 
 		//background settings
-		this.bg=this.game.add.tileSprite(0, 0, 800, 600, 'background');
+		this.bg=this.game.add.tileSprite(0, 0, 800, 608, 'background');
 		this.bg.fixedToCamera = true;
 		console.log("Background set");
 
@@ -188,6 +188,7 @@ class Main extends Phaser.State
 		//setting constants
 		this.gravity=400;
 		this.enemySpeed=100;
+		this.playerSpeed=200;
 		this.maxLives=3;
 		console.log("Constants set");
 
@@ -285,7 +286,7 @@ class Main extends Phaser.State
 		this.player.body.velocity.x = 0;
 		if (this.cursors.left.isDown)
 		{
-			this.player.body.velocity.x = -150;
+			this.player.body.velocity.x = -(this.playerSpeed);
 
 			if (this.facing != 'left')
 			{
@@ -295,7 +296,7 @@ class Main extends Phaser.State
 		}
 		else if (this.cursors.right.isDown)
 		{
-			this.player.body.velocity.x = 150;
+			this.player.body.velocity.x = (this.playerSpeed);
 
 			if (this.facing != 'right')
 			{
@@ -391,7 +392,7 @@ class GameOver extends Phaser.State
 {
 	preload()
 	{
-		this.game.load.image('background', 'assets/images/background600.png');
+		this.game.load.image('background', 'assets/images/background608.png');
 		this.game.load.image('button-back', 'assets/images/button-back.png');
 		this.game.load.image('button-tryagain', 'assets/images/button-tryagain.png');
 		console.log("GameOver preload");
@@ -401,7 +402,7 @@ class GameOver extends Phaser.State
 	create()
 	{
 		console.log("GameOver create");
-		this.bg=this.game.add.tileSprite(0, 0, 800, 600, 'background');
+		this.bg=this.game.add.tileSprite(0, 0, 800, 608, 'background');
 		this.textLose=this.add.text(260, 100, "YOU LOST!", {fontSize:'50px',fill:'#ff0000'});
 		game.sumScore+=game.score;
 
@@ -437,7 +438,7 @@ class GameWon extends Phaser.State
 {
 	preload()
 	{
-		this.game.load.image('background', 'assets/images/background600.png');
+		this.game.load.image('background', 'assets/images/background608.png');
 		this.game.load.image('button-back', 'assets/images/button-back.png');
 		this.game.load.image('button-continue', 'assets/images/button-continue.png');
 		console.log("GameWon preload");
@@ -446,7 +447,7 @@ class GameWon extends Phaser.State
 	create()
 	{
 		console.log("GameWon create");
-		this.bg=this.game.add.tileSprite(0, 0, 800, 600, 'background');
+		this.bg=this.game.add.tileSprite(0, 0, 800, 608, 'background');
 		this.buttonBack=this.game.add.button((game.width-600)/2,(game.height+250)/2,"button-back",()=>{this.back=true;});
 		this.buttonBack.scale.set(0.7,0.7);
 		this.buttonContinue=this.game.add.button((game.width+100)/2,(game.height+250)/2,"button-continue",()=>{this.continue=true;});
@@ -500,7 +501,7 @@ class Game extends Phaser.Game
 {
 	constructor()
 	{
-		super(800,600,Phaser.AUTO,'');
+		super(800,608,Phaser.AUTO,'');
 
 		this.state.add('Boot', Boot, false);
 		this.state.add('Preload', Preload, false);
