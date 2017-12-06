@@ -159,6 +159,8 @@ class Main extends Phaser.State
 		this.game.load.spritesheet('flag', 'assets/images/flag.png', 32, 32);
 		this.game.load.image('heart', 'assets/images/heart.png');
 		this.game.load.image('expl', 'assets/images/expl.png');
+		this.game.load.image('bullet', 'assets/images/bullet.png');
+		this.game.load.image('bulletShot', 'assets/images/bulletShot.png');
 	}
 
 	create()
@@ -190,6 +192,7 @@ class Main extends Phaser.State
 		this.enemySpeed=100;
 		this.playerSpeed=200;
 		this.maxLives=3;
+		this.bulletsCount=0;
 		console.log("Constants set");
 
 		//setting variables
@@ -204,15 +207,27 @@ class Main extends Phaser.State
 		this.scoreText=this.game.add.text(16,16,'Score: '+game.score,{fontSize:'32px',fill:'#000'});
 		this.scoreText.fixedToCamera=true;
 		this.lives=this.game.add.group();
-		this.livesText=this.game.add.text(320,16,'Lives: ',{fontSize:'32px',fill:'#fff'});
+		this.livesText=this.game.add.text(320,16,'Lives: ',{fontSize:'32px',fill:'#000000'});
 		for(let i=0;i<this.maxLives;i++)
-			this.heart=this.lives.create(432+(32*i),22,'heart');
+			this.heart=this.lives.create(412+(32*i),22,'heart');
 		this.lives.setAll('fixedToCamera',true);
 		this.livesText.fixedToCamera=true;
+		this.bulletsCountText=this.game.add.text(530,16,'Bullets: '+ this.bulletsCount,{fontSize:'32px',fill:'#000'})
+		this.bulletsCountText.fixedToCamera=true;
+		this.bulletsImg=this.game.add.tileSprite(675,10,32,32,'bullet');
+		this.bulletsImg.fixedToCamera=true;
 		this.buttonmenu = this.game.add.button(this.game.width-56,10,'menu', ()=>{this.managePause();});
 		this.buttonmenu.scale.set(0.5,0.5);
 		this.buttonmenu.fixedToCamera=true;
 		console.log("Hud set",this.scoreText);
+
+		//bullets Physics
+		this.bullets=this.game.add.group();
+		this.game.physics.enable(this.bullets,Phaser.Physics.ARCADE);
+		this.bullets.enableBody=true;
+		this.map.createFromTiles(14,null, 'bullet', 'elements', this.bullets);
+		this.bullets.setAll('body.gravity.y',-(this.gravity));
+		console.log("Bullets physics set");
 
 		//coins physics
 		this.coins=this.game.add.group();
@@ -281,6 +296,8 @@ class Main extends Phaser.State
 		this.game.physics.arcade.overlap(this.player,this.enemies,this.restart,null,this);
 		this.game.physics.arcade.overlap(this.player,this.coins,this.collectCoin,null,this);
 		this.game.physics.arcade.overlap(this.player,this.flag,()=>{this.game.state.start("GameWon");},null,this);
+		this.game.physics.arcade.overlap(this.player,this.bullets,this.collectBullet,null,this);
+		this.game.physics.arcade.overlap(this.bullet, this.enemies, this.shoot);
 
 		//player movement
 		this.player.body.velocity.x = 0;
@@ -309,17 +326,39 @@ class Main extends Phaser.State
 			if (this.facing != 'idle')
 			{
 				this.player.animations.stop();
-
 				this.player.frame = 2;
 				this.facing = 'idle';
 			}
 		}
 
-		if (this.jumpButton.isDown && this.player.body.onFloor() && this.game.time.now > this.jumpTimer)
+		if (this.cursors.up.isDown && this.player.body.onFloor() && this.game.time.now > this.jumpTimer)
 		{
 			this.player.body.velocity.y = -350;
 			this.jumpTimer = game.time.now + 500;
 		}
+
+		//shooting
+		if(this.game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
+			if(this.facing=='right'||this.facing=='left'){
+      if(this.bulletsCount > 0){
+       this.bulletsCount--;
+       this.bulletsCountText.text='Bullets: '+this.bulletsCount;
+       this.bullet = this.game.add.sprite(this.player.body.x+8,this.player.body.y+12,'bulletShot');
+			 this.bullet.anchor.setTo(0.5);
+       this.game.physics.arcade.enable(this.bullet);
+			 this.bullet.body.gravity.y=-(this.gravity);
+			 	if(this.facing=='right') {
+					//bullet.body.x+=16;
+       		this.bullet.body.velocity.x=200;
+				}
+				else {
+					this.bullet.scale.setTo(-1);
+
+       		this.bullet.body.velocity.x=-200;
+		 		}
+      }
+    }
+	}
 
 		console.log("Main update");
 		if(this.gameOver===true)
@@ -337,6 +376,20 @@ class Main extends Phaser.State
 		coin.kill();
 		game.score+=10;
 		this.scoreText.text='Score: '+game.score;
+	}
+
+	collectBullet(player,bullet)
+	{
+		bullet.kill();
+		this.bulletsCount++;
+		this.bulletsCountText.text='Bullets: '+this.bulletsCount;
+	}
+
+	shoot (bullet, enemy) {
+  bullet.kill();
+  enemy.animations.stop();
+  enemy.body.enable = false;
+	enemy.kill();
 	}
 
 	doorOpen()
