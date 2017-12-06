@@ -342,7 +342,6 @@ class Main extends Phaser.State
 			this.jumpTimer = game.time.now + 500;
 		}
 
-<<<<<<< HEAD
 		//shooting
 		if(this.game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
 			if(this.facing=='right'||this.facing=='left'){
@@ -367,8 +366,7 @@ class Main extends Phaser.State
 	}
 
 		console.log("Main update");
-=======
->>>>>>> 47b49ffc4c59a8f4328d239526de8d761f734f15
+
 		if(this.gameOver===true)
 			this.game.state.start("GameOver");
 	}
